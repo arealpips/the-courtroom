@@ -142,6 +142,35 @@ button:disabled{opacity:.45;cursor:not-allowed}
   margin:5px 0 8px;
 }
 
+/* NEW DEVELOPER AND TRUSTED BADGES */
+.reply-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin:5px 0 10px;
+}
+
+.developer-badge{
+  display:inline-block;
+  background:#542080;
+  color:#e8caff;
+  font-size:12px;
+  font-weight:900;
+  padding:5px 9px;
+  border-radius:5px;
+}
+
+.trusted-badge{
+  display:inline-block;
+  background:#174d2a;
+  color:#8cffaa;
+  font-size:12px;
+  font-weight:900;
+  padding:5px 9px;
+  border-radius:5px;
+}
+
 .turn-notice{
   padding:12px;
   margin:12px 0;
@@ -152,6 +181,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
   font-size:14px;
 }
 
+/* INFORMATION BOXES */
 .info-box{
   background:#211f1b;
   border:1px solid #665b43;
@@ -194,7 +224,7 @@ hr{
   margin:25px 0;
 }
 
-/* Developer section */
+/* ABOUT THE DEVELOPER */
 .developer-area{
   text-align:center;
   margin-top:35px;
@@ -261,9 +291,7 @@ hr{
   height:65px;
 }
 
-.social-card strong{
-  font-size:16px;
-}
+.social-card strong{font-size:16px}
 
 .social-card span{
   color:#aaa;
@@ -578,6 +606,7 @@ function makeButton(text,callback){
   return button;
 }
 
+/* COURT REPLY WITH DEVELOPER AND TRUSTED BADGES */
 function makeCourtReply(text){
   const div = document.createElement("div");
   div.className = "message reply";
@@ -590,12 +619,25 @@ function makeCourtReply(text){
   signature.className = "higuruma-signature";
   signature.textContent = "(Defense Attorney) Hiromi Higuruma";
 
+  const badges = document.createElement("div");
+  badges.className = "reply-badges";
+
+  const developerBadge = document.createElement("span");
+  developerBadge.className = "developer-badge";
+  developerBadge.textContent = "🛠️Developer🛠️";
+
+  const trustedBadge = document.createElement("span");
+  trustedBadge.className = "trusted-badge";
+  trustedBadge.textContent = "Trusted✅";
+
+  badges.append(developerBadge,trustedBadge);
+
   const content = document.createElement("div");
   content.style.whiteSpace = "pre-wrap";
   content.style.overflowWrap = "anywhere";
   content.textContent = text;
 
-  div.append(heading,signature,content);
+  div.append(heading,signature,badges,content);
   return div;
 }
 
@@ -1090,7 +1132,7 @@ async function logout(){
   status("You have logged out.");
 }
 
-/* Developer section controls */
+/* DEVELOPER SECTION */
 $("developerToggle").onclick = ()=>{
   const panel = $("developerPanel");
   const isOpening = panel.classList.contains("hidden");
