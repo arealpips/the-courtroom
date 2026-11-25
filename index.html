@@ -152,7 +152,6 @@ button:disabled{opacity:.45;cursor:not-allowed}
   font-size:14px;
 }
 
-/* Information boxes */
 .info-box{
   background:#211f1b;
   border:1px solid #665b43;
@@ -172,13 +171,8 @@ button:disabled{opacity:.45;cursor:not-allowed}
   margin:0 0 10px;
 }
 
-.info-box p{
-  margin:9px 0;
-}
-
-.info-box strong{
-  color:#e5cda4;
-}
+.info-box p{margin:9px 0}
+.info-box strong{color:#e5cda4}
 
 .info-box .privacy-note{
   color:#aaa;
@@ -200,6 +194,115 @@ hr{
   margin:25px 0;
 }
 
+/* Developer section */
+.developer-area{
+  text-align:center;
+  margin-top:35px;
+}
+
+.developer-toggle{
+  background:#29251e;
+  color:#e5cda4;
+  border:1px solid #806d4e;
+  padding:14px 24px;
+  letter-spacing:1px;
+  width:100%;
+  max-width:340px;
+}
+
+.developer-toggle:hover{
+  background:#403727;
+}
+
+.developer-panel{
+  margin-top:15px;
+  background:rgba(27,27,27,.97);
+  border:1px solid #806d4e;
+  border-radius:6px;
+  padding:24px;
+  text-align:center;
+}
+
+.developer-panel h2{
+  color:#e5cda4;
+  letter-spacing:2px;
+}
+
+.social-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  margin:20px 0;
+}
+
+.social-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:18px 10px;
+  min-width:0;
+  background:#202020;
+  border:1px solid #555;
+  border-radius:7px;
+  color:#eee;
+  text-decoration:none;
+  transition:background .2s,transform .2s;
+}
+
+.social-card:hover{
+  background:#333;
+  transform:translateY(-3px);
+}
+
+.social-card svg{
+  width:65px;
+  height:65px;
+}
+
+.social-card strong{
+  font-size:16px;
+}
+
+.social-card span{
+  color:#aaa;
+  font-size:13px;
+  overflow-wrap:anywhere;
+}
+
+.discord-copy{
+  margin-top:8px;
+  background:#5865F2;
+  color:white;
+  border-radius:4px;
+  font-size:12px;
+  padding:9px 12px;
+}
+
+.discord-copy:hover{background:#4752c4}
+
+.developer-note{
+  border-top:1px solid #514a3d;
+  padding-top:20px;
+  margin-top:22px;
+  color:#ddd;
+  line-height:1.7;
+}
+
+.developer-note strong{
+  display:block;
+  color:#d7bd8b;
+  letter-spacing:1px;
+  margin-bottom:10px;
+}
+
+.developer-note p{
+  font-size:17px;
+  font-style:italic;
+  margin:0;
+}
+
 @media(max-width:950px){
   .side-banner{display:none}
   main{max-width:700px}
@@ -211,6 +314,10 @@ hr{
   .panel{padding:16px}
   .higuruma-signature{font-size:17px}
   .info-box{padding:14px;font-size:13px}
+  .developer-panel{padding:17px}
+  .social-grid{gap:9px}
+  .social-card{padding:14px 7px}
+  .social-card svg{width:52px;height:52px}
 }
 </style>
 </head>
@@ -314,9 +421,7 @@ Share a confession, ask for advice, or tell your story.
 <div class="info-box">
 <h3>♡ A LITTLE REMINDER</h3>
 
-<p>
-Take a breath. You're allowed to let things out.
-</p>
+<p>Take a breath. You're allowed to let things out.</p>
 
 <p>
 - Talk about your feelings, even if they're complicated.<br>
@@ -365,6 +470,70 @@ All submissions are listed below. Select one to read and reply.
 </div>
 
 </section>
+
+<!-- ABOUT THE DEVELOPER -->
+<div class="developer-area">
+
+<button id="developerToggle" class="developer-toggle">
+ABOUT THE DEVELOPER
+</button>
+
+<div id="developerPanel" class="developer-panel hidden">
+
+<h2>ABOUT THE DEVELOPER</h2>
+
+<p class="small">The person behind THE COURTROOM ⚖️</p>
+
+<h3>The developer's socials:</h3>
+
+<div class="social-grid">
+
+<!-- TIKTOK -->
+<a class="social-card"
+   href="https://www.tiktok.com/@arealpips"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="Visit TikTok @arealpips">
+
+<svg viewBox="0 0 48 48" aria-hidden="true">
+<path fill="#25F4EE"
+d="M28 4h7c.5 5 3.5 8.2 8 9v7c-3.4 0-6.3-1.1-8.8-3v13.5C34.2 39 28.4 44 21 44 13.7 44 8 38.3 8 31s5.7-13 13-13c1 0 2 .1 3 .4v7.4c-.9-.5-1.9-.8-3-.8-3.7 0-6.7 3-6.7 6.7s3 6.7 6.7 6.7 6.7-3 6.7-6.7V4z"/>
+<path fill="#FE2C55"
+d="M25 7h7c.5 5 3.5 8.2 8 9v7c-3.4 0-6.3-1.1-8.8-3v13.5C31.2 42 25.4 47 18 47c-3.7 0-7-1.5-9.4-3.9 2.3 1.5 5 2.3 7.9 2.3 7.4 0 13.2-5 13.2-13.5V18.4c2.5 1.9 5.4 3 8.8 3v-1.7c-4.5-.8-7.5-4-8-9h-5.5z"/>
+<path fill="#fff"
+d="M25 4h7c.5 5 3.5 8.2 8 9v7c-3.4 0-6.3-1.1-8.8-3v13.5C31.2 39 25.4 44 18 44 10.7 44 5 38.3 5 31s5.7-13 13-13c1 0 2 .1 3 .4v7.4c-.9-.5-1.9-.8-3-.8-3.7 0-6.7 3-6.7 6.7s3 6.7 6.7 6.7 6.7-3 6.7-6.7V4z"/>
+</svg>
+
+<strong>TikTok</strong>
+<span>@arealpips</span>
+</a>
+
+<!-- DISCORD -->
+<div class="social-card">
+
+<svg viewBox="0 0 48 48" aria-hidden="true">
+<path fill="#5865F2"
+d="M40 8.5A37 37 0 0 0 30.8 5.7l-1.1 2.2a34 34 0 0 0-11.4 0l-1.1-2.2A37 37 0 0 0 8 8.5C2.2 17.1.6 25.5 1.4 33.8a37 37 0 0 0 11.3 5.7l2.4-3.9a24 24 0 0 1-3.8-1.8l.9-.7a26.5 26.5 0 0 0 23.6 0l.9.7a24 24 0 0 1-3.8 1.8l2.4 3.9a37 37 0 0 0 11.3-5.7C47.9 23.8 45.2 15.5 40 8.5ZM17.5 28.2c-2.2 0-4-2-4-4.4s1.8-4.4 4-4.4 4 2 4 4.4-1.8 4.4-4 4.4Zm13 0c-2.2 0-4-2-4-4.4s1.8-4.4 4-4.4 4 2 4 4.4-1.8 4.4-4 4.4Z"/>
+</svg>
+
+<strong>Discord</strong>
+<span id="discordUsername">guiltycurse</span>
+
+<button type="button" class="discord-copy" id="copyDiscordBtn">
+COPY USERNAME
+</button>
+
+</div>
+</div>
+
+<div class="developer-note">
+<strong>Developer Note:</strong>
+<p>"I had alot of fun making this website, remember that you matter!" ❤️</p>
+</div>
+
+</div>
+</div>
+
 </section>
 </main>
 
@@ -456,6 +625,8 @@ function resetInterface(){
   $("auth").classList.remove("hidden");
   $("userArea").classList.add("hidden");
   $("adminArea").classList.add("hidden");
+  $("developerPanel").classList.add("hidden");
+  $("developerToggle").textContent = "ABOUT THE DEVELOPER";
 
   $("replyBtn").disabled = true;
   $("adminReply").disabled = true;
@@ -918,6 +1089,31 @@ async function logout(){
   resetInterface();
   status("You have logged out.");
 }
+
+/* Developer section controls */
+$("developerToggle").onclick = ()=>{
+  const panel = $("developerPanel");
+  const isOpening = panel.classList.contains("hidden");
+
+  panel.classList.toggle("hidden");
+  $("developerToggle").textContent =
+    isOpening ? "CLOSE DEVELOPER SECTION" : "ABOUT THE DEVELOPER";
+};
+
+$("copyDiscordBtn").onclick = async ()=>{
+  const username = "guiltycurse";
+
+  try{
+    await navigator.clipboard.writeText(username);
+    $("copyDiscordBtn").textContent = "COPIED! ✓";
+  }catch(error){
+    $("copyDiscordBtn").textContent = "USERNAME: guiltycurse";
+  }
+
+  setTimeout(()=>{
+    $("copyDiscordBtn").textContent = "COPY USERNAME";
+  },2500);
+};
 
 $("registerBtn").onclick = register;
 $("loginBtn").onclick = login;
