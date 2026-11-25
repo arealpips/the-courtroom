@@ -9,28 +9,160 @@
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#111;color:#eee;font-family:Georgia,serif}
-header{text-align:center;padding:35px 15px;border-bottom:1px solid #444}
-h1{letter-spacing:5px;font-size:32px}
+
+body{
+  margin:0;
+  background:#111;
+  color:#eee;
+  font-family:Georgia,serif;
+}
+
+.side-banner{
+  position:fixed;
+  top:0;
+  width:clamp(110px,15vw,220px);
+  height:100vh;
+  object-fit:cover;
+  object-position:center;
+  z-index:0;
+  opacity:.85;
+  pointer-events:none;
+}
+
+#leftBanner{left:0}
+#rightBanner{right:0}
+
+header,main{
+  position:relative;
+  z-index:1;
+}
+
+header{
+  text-align:center;
+  padding:35px 15px;
+  border-bottom:1px solid #444;
+  background:rgba(17,17,17,.82);
+}
+
+h1{
+  letter-spacing:5px;
+  font-size:32px;
+}
+
 header p{color:#aaa}
-main{max-width:700px;margin:35px auto;padding:20px}
-.panel{background:#1b1b1b;border:1px solid #444;padding:22px;margin-bottom:20px;border-radius:5px}
-input,textarea{width:100%;padding:13px;margin:8px 0;background:#111;color:white;border:1px solid #555;border-radius:3px;font:16px Arial}
-textarea{min-height:120px;resize:vertical}
-button{padding:12px 18px;margin:5px 4px 5px 0;background:#ddd;color:#111;border:0;cursor:pointer;font-weight:bold}
+
+main{
+  max-width:700px;
+  margin:35px auto;
+  padding:20px;
+}
+
+.panel{
+  background:rgba(27,27,27,.96);
+  border:1px solid #444;
+  padding:22px;
+  margin-bottom:20px;
+  border-radius:5px;
+}
+
+input,textarea{
+  width:100%;
+  padding:13px;
+  margin:8px 0;
+  background:#111;
+  color:white;
+  border:1px solid #555;
+  border-radius:3px;
+  font:16px Arial;
+}
+
+textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+button{
+  padding:12px 18px;
+  margin:5px 4px 5px 0;
+  background:#ddd;
+  color:#111;
+  border:0;
+  cursor:pointer;
+  font-weight:bold;
+}
+
 button:hover{background:#aaa}
 button:disabled{opacity:.45;cursor:not-allowed}
+
 .small{color:#aaa;font-size:13px}
 .hidden{display:none!important}
-.item{padding:13px;border-bottom:1px solid #444}
-.message{padding:12px;margin:10px 0;background:#292929;border-radius:4px;white-space:pre-wrap;overflow-wrap:anywhere}
-.reply{margin-left:20px;border-left:2px solid #aaa}
-#status{color:#d7bd8b;white-space:pre-wrap;overflow-wrap:anywhere}
-hr{border:0;border-top:1px solid #444;margin:25px 0}
+
+.item{
+  padding:13px;
+  border-bottom:1px solid #444;
+}
+
+.message{
+  padding:12px;
+  margin:10px 0;
+  background:#292929;
+  border-radius:4px;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.reply{
+  margin-left:20px;
+  border-left:2px solid #aaa;
+}
+
+.reply-heading{
+  color:#ccc;
+  font-size:13px;
+  margin-bottom:5px;
+}
+
+.higuruma-signature{
+  color:#ed2525;
+  font-size:20px;
+  font-weight:900;
+  margin:5px 0 8px;
+}
+
+#status{
+  color:#d7bd8b;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+hr{
+  border:0;
+  border-top:1px solid #444;
+  margin:25px 0;
+}
+
+@media(max-width:950px){
+  .side-banner{display:none}
+  main{max-width:700px}
+}
+
+@media(max-width:500px){
+  h1{font-size:25px;letter-spacing:3px}
+  main{margin:15px auto;padding:12px}
+  .panel{padding:16px}
+  .higuruma-signature{font-size:17px}
+}
 </style>
 </head>
 
 <body>
+
+<img id="leftBanner" class="side-banner"
+     src="higuruma-left.jpg" alt="Hiromi Higuruma">
+
+<img id="rightBanner" class="side-banner"
+     src="higuruma-right.jpg" alt="Hiromi Higuruma">
+
 <header>
 <h1>THE COURTROOM</h1>
 <p>Confessions. Advice. Judgment without prejudice.</p>
@@ -68,6 +200,7 @@ hr{border:0;border-top:1px solid #444;margin:25px 0}
 </div>
 
 <section id="userArea" class="hidden">
+
 <div class="panel">
 <h2>Submit your message</h2>
 <p class="small">Share a confession, ask for advice, or tell your story.</p>
@@ -79,9 +212,11 @@ hr{border:0;border-top:1px solid #444;margin:25px 0}
 <h2>Your conversations</h2>
 <div id="mySubmissions"></div>
 </div>
+
 </section>
 
 <section id="adminArea" class="hidden">
+
 <div class="panel">
 <h2>Administrator's chamber</h2>
 <p class="small">All submissions are listed below. Select one to read and reply.</p>
@@ -94,6 +229,7 @@ hr{border:0;border-top:1px solid #444;margin:25px 0}
 <textarea id="adminReply" placeholder="Write your reply..."></textarea>
 <button id="replyBtn" disabled>SEND REPLY</button>
 </div>
+
 </section>
 </section>
 </main>
@@ -111,12 +247,12 @@ let currentProfile = null;
 let selectedSubmission = null;
 let loadingApp = null;
 
-function status(message) {
+function status(message){
   $("status").textContent = message;
 }
 
-function errorDetails(error) {
-  if (!error) return "Unknown error.";
+function errorDetails(error){
+  if(!error) return "Unknown error.";
   return [
     error.message || "Unknown error",
     error.code ? "Code: " + error.code : "",
@@ -125,21 +261,43 @@ function errorDetails(error) {
   ].filter(Boolean).join("\n");
 }
 
-function makeMessage(text, className = "message") {
+function makeMessage(text,className="message"){
   const div = document.createElement("div");
   div.className = className;
   div.textContent = text;
   return div;
 }
 
-function makeButton(text, callback) {
+function makeButton(text,callback){
   const button = document.createElement("button");
   button.textContent = text;
   button.onclick = callback;
   return button;
 }
 
-function resetInterface() {
+/* Creates the special Higuruma reply design */
+function makeCourtReply(text){
+  const div = document.createElement("div");
+  div.className = "message reply";
+
+  const heading = document.createElement("div");
+  heading.className = "reply-heading";
+  heading.textContent = "COURT REPLY:";
+
+  const signature = document.createElement("div");
+  signature.className = "higuruma-signature";
+  signature.textContent = "(Defense Attorney) Hiromi Higuruma";
+
+  const content = document.createElement("div");
+  content.style.whiteSpace = "pre-wrap";
+  content.style.overflowWrap = "anywhere";
+  content.textContent = text;
+
+  div.append(heading,signature,content);
+  return div;
+}
+
+function resetInterface(){
   currentUser = null;
   currentProfile = null;
   selectedSubmission = null;
@@ -151,93 +309,90 @@ function resetInterface() {
   $("replyBtn").disabled = true;
 }
 
-async function register() {
+async function register(){
   const username = $("newUsername").value.trim();
   const email = $("newEmail").value.trim();
   const password = $("newPassword").value;
 
-  if (!/^[a-zA-Z0-9_]{3,24}$/.test(username)) {
+  if(!/^[a-zA-Z0-9_]{3,24}$/.test(username)){
     return status("Username must be 3–24 characters: letters, numbers or underscores.");
   }
 
-  if (!email || password.length < 8) {
+  if(!email || password.length < 8){
     return status("Enter a valid email and a password of at least 8 characters.");
   }
 
-  if (username.toLowerCase() === "arealpips") {
+  if(username.toLowerCase() === "arealpips"){
     return status("That username is reserved.");
   }
 
   $("registerBtn").disabled = true;
   status("Creating your account...");
 
-  try {
-    const {data, error} = await db.auth.signUp({
+  try{
+    const {data,error} = await db.auth.signUp({
       email,
       password,
-      options: {
-        data: {username}
-      }
+      options:{data:{username}}
     });
 
-    if (error) {
+    if(error){
       status(error.message);
       return;
     }
 
-    if (data.session) {
+    if(data.session){
       await loadApp(data.user);
-    } else {
+    }else{
       status("Account created! Check your email if confirmation is required. Once confirmed, return here and log in.");
     }
-  } catch (error) {
+  }catch(error){
     status(error.message || "Registration failed.");
-  } finally {
+  }finally{
     $("registerBtn").disabled = false;
   }
 }
 
-async function login() {
+async function login(){
   const email = $("email").value.trim();
   const password = $("password").value;
 
-  if (!email || !password) {
+  if(!email || !password){
     return status("Enter your email and password.");
   }
 
   $("loginBtn").disabled = true;
   status("Signing in...");
 
-  try {
-    const {data, error} = await db.auth.signInWithPassword({
-      email,
-      password
+  try{
+    const {data,error} = await db.auth.signInWithPassword({
+      email,password
     });
 
-    if (error) {
+    if(error){
       status(error.message);
       return;
     }
 
     await loadApp(data.user);
-  } catch (error) {
+  }catch(error){
     status(error.message || "Login failed.");
-  } finally {
+  }finally{
     $("loginBtn").disabled = false;
   }
 }
 
-async function loadApp(userOverride = null) {
-  if (loadingApp) return loadingApp;
+async function loadApp(userOverride=null){
+  if(loadingApp) return loadingApp;
 
-  loadingApp = (async () => {
-    try {
+  loadingApp = (async()=>{
+    try{
       let user = userOverride;
 
-      if (!user) {
-        const {data, error} = await db.auth.getUser();
+      if(!user){
+        const {data,error} = await db.auth.getUser();
 
-        if (error) {
+        if(error){
           status("Could not verify your login: " + error.message);
           return;
         }
@@ -245,7 +400,7 @@ async function loadApp(userOverride = null) {
         user = data.user;
       }
 
-      if (!user) {
+      if(!user){
         resetInterface();
         return;
       }
@@ -253,27 +408,19 @@ async function loadApp(userOverride = null) {
       currentUser = user;
       status("Loading your profile...");
 
-      const {data: profile, error} = await db
+      const {data:profile,error} = await db
         .from("profiles")
         .select("username,is_admin")
-        .eq("id", user.id)
+        .eq("id",user.id)
         .maybeSingle();
 
-      if (error) {
-        status(
-          "PROFILE ERROR\n" +
-          errorDetails(error) +
-          "\n\nYour account is signed in, but Supabase could not read your profile."
-        );
+      if(error){
+        status("PROFILE ERROR\n" + errorDetails(error));
         return;
       }
 
-      if (!profile) {
-        status(
-          "PROFILE NOT FOUND\n" +
-          "Your login exists, but no matching profile was returned for this account.\n" +
-          "Please contact the administrator."
-        );
+      if(!profile){
+        status("PROFILE NOT FOUND\nYour account has no matching profile. Please contact the administrator.");
         return;
       }
 
@@ -283,47 +430,46 @@ async function loadApp(userOverride = null) {
       $("app").classList.remove("hidden");
       $("username").textContent = profile.username || "User";
 
-      if (profile.is_admin === true) {
+      if(profile.is_admin === true){
         $("adminArea").classList.remove("hidden");
         $("userArea").classList.add("hidden");
         await loadAllSubmissions();
-      } else {
+      }else{
         $("userArea").classList.remove("hidden");
         $("adminArea").classList.add("hidden");
         await loadMySubmissions();
       }
 
       status("");
-    } catch (error) {
+
+    }catch(error){
       status("APP ERROR\n" + (error.message || String(error)));
     }
   })();
 
-  try {
+  try{
     await loadingApp;
-  } finally {
+  }finally{
     loadingApp = null;
   }
 }
 
-async function submitMessage() {
-  if (!currentUser) return status("Please log in again.");
+async function submitMessage(){
+  if(!currentUser) return status("Please log in again.");
 
   const message = $("submissionText").value.trim();
 
-  if (!message) {
-    return status("Please write a message first.");
-  }
+  if(!message) return status("Please write a message first.");
 
   $("submitBtn").disabled = true;
 
-  try {
+  try{
     const {error} = await db.from("submissions").insert({
-      user_id: currentUser.id,
+      user_id:currentUser.id,
       message
     });
 
-    if (error) {
+    if(error){
       status(errorDetails(error));
       return;
     }
@@ -331,19 +477,20 @@ async function submitMessage() {
     $("submissionText").value = "";
     status("Your message has been submitted.");
     await loadMySubmissions();
-  } finally {
+
+  }finally{
     $("submitBtn").disabled = false;
   }
 }
 
-async function loadMySubmissions() {
-  const {data, error} = await db
+async function loadMySubmissions(){
+  const {data,error} = await db
     .from("submissions")
     .select("id,message,created_at")
-    .eq("user_id", currentUser.id)
-    .order("created_at", {ascending: false});
+    .eq("user_id",currentUser.id)
+    .order("created_at",{ascending:false});
 
-  if (error) {
+  if(error){
     status("Could not load your submissions:\n" + errorDetails(error));
     return;
   }
@@ -351,57 +498,57 @@ async function loadMySubmissions() {
   const list = $("mySubmissions");
   list.replaceChildren();
 
-  if (!data || !data.length) {
+  if(!data || !data.length){
     list.textContent = "You haven't submitted anything yet.";
     return;
   }
 
-  for (const item of data) {
+  for(const item of data){
     const entry = document.createElement("div");
     entry.className = "item";
 
     entry.append(makeMessage(item.message));
-    entry.append(makeButton("VIEW REPLIES", () => showUserConversation(item)));
+    entry.append(makeButton("VIEW REPLIES",()=>showUserConversation(item)));
 
     list.append(entry);
   }
 }
 
-async function showUserConversation(item) {
+async function showUserConversation(item){
   const box = $("mySubmissions");
   box.replaceChildren();
 
-  box.append(makeButton("BACK TO MY MESSAGES", loadMySubmissions));
+  box.append(makeButton("BACK TO MY MESSAGES",loadMySubmissions));
   box.append(makeMessage(item.message));
 
-  const {data, error} = await db
+  const {data,error} = await db
     .from("replies")
     .select("message,created_at")
-    .eq("submission_id", item.id)
-    .order("created_at", {ascending: true});
+    .eq("submission_id",item.id)
+    .order("created_at",{ascending:true});
 
-  if (error) {
+  if(error){
     status("Could not load replies:\n" + errorDetails(error));
     return;
   }
 
-  if (!data || !data.length) {
+  if(!data || !data.length){
     box.append(makeMessage("No replies yet."));
     return;
   }
 
-  for (const reply of data) {
-    box.append(makeMessage("COURT REPLY:\n" + reply.message, "message reply"));
+  for(const reply of data){
+    box.append(makeCourtReply(reply.message));
   }
 }
 
-async function loadAllSubmissions() {
-  const {data, error} = await db
+async function loadAllSubmissions(){
+  const {data,error} = await db
     .from("submissions")
     .select("id,user_id,message,created_at")
-    .order("created_at", {ascending: false});
+    .order("created_at",{ascending:false});
 
-  if (error) {
+  if(error){
     status("Could not load submissions:\n" + errorDetails(error));
     return;
   }
@@ -409,27 +556,27 @@ async function loadAllSubmissions() {
   const list = $("allSubmissions");
   list.replaceChildren();
 
-  if (!data || !data.length) {
+  if(!data || !data.length){
     list.textContent = "No submissions yet.";
     return;
   }
 
-  // Look up usernames for the submitters.
-  const userIds = [...new Set(data.map(item => item.user_id))];
-  const {data: profiles, error: profileError} = await db
+  const userIds = [...new Set(data.map(item=>item.user_id))];
+
+  const {data:profiles,error:profileError} = await db
     .from("profiles")
     .select("id,username")
-    .in("id", userIds);
+    .in("id",userIds);
 
   const usernames = {};
 
-  if (!profileError && profiles) {
-    for (const profile of profiles) {
+  if(!profileError && profiles){
+    for(const profile of profiles){
       usernames[profile.id] = profile.username;
     }
   }
 
-  for (const item of data) {
+  for(const item of data){
     const entry = document.createElement("div");
     entry.className = "item";
 
@@ -439,64 +586,56 @@ async function loadAllSubmissions() {
 
     entry.append(title);
     entry.append(makeMessage(item.message));
-    entry.append(makeButton("OPEN CONVERSATION", () => openAdminConversation(item)));
+    entry.append(makeButton("OPEN CONVERSATION",()=>openAdminConversation(item)));
 
     list.append(entry);
   }
 
-  if (profileError) {
+  if(profileError){
     status("Submissions loaded, but usernames could not be loaded:\n" + errorDetails(profileError));
   }
 }
 
-async function openAdminConversation(item) {
+async function openAdminConversation(item){
   selectedSubmission = item;
 
   $("selectedTitle").textContent = "Conversation";
   $("replyBtn").disabled = false;
   $("conversation").replaceChildren(makeMessage(item.message));
 
-  const {data, error} = await db
+  const {data,error} = await db
     .from("replies")
     .select("message,sender_id,created_at")
-    .eq("submission_id", item.id)
-    .order("created_at", {ascending: true});
+    .eq("submission_id",item.id)
+    .order("created_at",{ascending:true});
 
-  if (error) {
+  if(error){
     status("Could not load conversation:\n" + errorDetails(error));
     return;
   }
 
-  for (const reply of data || []) {
-    const label = reply.sender_id === currentUser.id
-      ? "ADMIN: "
-      : "COURT REPLY: ";
-
-    $("conversation").append(
-      makeMessage(label + reply.message, "message reply")
-    );
+  for(const reply of data || []){
+    $("conversation").append(makeCourtReply(reply.message));
   }
 }
 
-async function sendReply() {
-  if (!selectedSubmission || !currentUser) return;
+async function sendReply(){
+  if(!selectedSubmission || !currentUser) return;
 
   const message = $("adminReply").value.trim();
 
-  if (!message) {
-    return status("Write a reply first.");
-  }
+  if(!message) return status("Write a reply first.");
 
   $("replyBtn").disabled = true;
 
-  try {
+  try{
     const {error} = await db.from("replies").insert({
-      submission_id: selectedSubmission.id,
-      sender_id: currentUser.id,
+      submission_id:selectedSubmission.id,
+      sender_id:currentUser.id,
       message
     });
 
-    if (error) {
+    if(error){
       status("Could not send reply:\n" + errorDetails(error));
       return;
     }
@@ -504,15 +643,16 @@ async function sendReply() {
     $("adminReply").value = "";
     status("Reply sent.");
     await openAdminConversation(selectedSubmission);
-  } finally {
+
+  }finally{
     $("replyBtn").disabled = !selectedSubmission;
   }
 }
 
-async function logout() {
+async function logout(){
   const {error} = await db.auth.signOut();
 
-  if (error) {
+  if(error){
     status("Could not log out: " + error.message);
     return;
   }
@@ -527,16 +667,16 @@ $("submitBtn").onclick = submitMessage;
 $("replyBtn").onclick = sendReply;
 $("logoutBtn").onclick = logout;
 
-db.auth.onAuthStateChange((event, session) => {
-  setTimeout(() => {
-    if (event === "SIGNED_IN" && session) {
+db.auth.onAuthStateChange((event,session)=>{
+  setTimeout(()=>{
+    if(event === "SIGNED_IN" && session){
       loadApp(session.user);
     }
 
-    if (event === "SIGNED_OUT") {
+    if(event === "SIGNED_OUT"){
       resetInterface();
     }
-  }, 0);
+  },0);
 });
 
 loadApp();
