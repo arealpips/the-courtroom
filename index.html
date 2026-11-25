@@ -116,9 +116,22 @@ button:disabled{opacity:.45;cursor:not-allowed}
   border-left:2px solid #aaa;
 }
 
+.user-message{
+  margin-left:20px;
+  border-left:2px solid #8b8b8b;
+  background:#202832;
+}
+
 .reply-heading{
   color:#ccc;
   font-size:13px;
+  margin-bottom:5px;
+}
+
+.user-heading{
+  color:#a9c9ee;
+  font-size:13px;
+  font-weight:bold;
   margin-bottom:5px;
 }
 
@@ -127,6 +140,52 @@ button:disabled{opacity:.45;cursor:not-allowed}
   font-size:20px;
   font-weight:900;
   margin:5px 0 8px;
+}
+
+.turn-notice{
+  padding:12px;
+  margin:12px 0;
+  border:1px solid #665b43;
+  background:#242018;
+  color:#d7bd8b;
+  border-radius:4px;
+  font-size:14px;
+}
+
+/* Information boxes */
+.info-box{
+  background:#211f1b;
+  border:1px solid #665b43;
+  border-left:3px solid #b59b70;
+  border-radius:5px;
+  padding:17px;
+  margin:15px 0 22px;
+  color:#ddd;
+  line-height:1.65;
+  font-size:14px;
+}
+
+.info-box h3{
+  color:#d7bd8b;
+  font-size:17px;
+  letter-spacing:1px;
+  margin:0 0 10px;
+}
+
+.info-box p{
+  margin:9px 0;
+}
+
+.info-box strong{
+  color:#e5cda4;
+}
+
+.info-box .privacy-note{
+  color:#aaa;
+  font-size:12px;
+  border-top:1px solid #514a3d;
+  padding-top:10px;
+  margin-top:13px;
 }
 
 #status{
@@ -151,6 +210,7 @@ hr{
   main{margin:15px auto;padding:12px}
   .panel{padding:16px}
   .higuruma-signature{font-size:17px}
+  .info-box{padding:14px;font-size:13px}
 }
 </style>
 </head>
@@ -173,6 +233,49 @@ hr{
 
 <section id="auth" class="panel">
 <h2>Enter the courtroom</h2>
+
+<div class="info-box">
+<h3>⚖️ ABOUT THE COURTROOM</h3>
+
+<p><strong>A place where you can speak freely.</strong></p>
+
+<p>
+Everyone has feelings, struggles, worries, and things they
+sometimes can't tell anyone.
+</p>
+
+<p>
+This website is a place where you can vent, share your emotions,
+talk about your problems, ask for advice, or simply let everything out.
+</p>
+
+<p>
+<strong>There is no judgment here.</strong>
+You don't have to hide your feelings, pretend to be okay,
+or be afraid of being misunderstood.
+</p>
+
+<p>
+<strong>Your anonymity matters.</strong>
+You can choose a username unrelated to your real identity.
+You don't have to share your real name or personal details.
+The developer does not know who you are in real life
+just from your messages.
+</p>
+
+<p>
+You deserve to be heard, understood, and treated with kindness.
+</p>
+
+<p><strong>You are welcome here, exactly as you are. ❤️</strong></p>
+
+<p class="privacy-note">
+A privacy reminder: your email and account information are
+processed by the authentication service and may be accessible
+to the administrator. Avoid sharing identifying or sensitive
+details you don't want disclosed.
+</p>
+</div>
 
 <div id="register">
 <h3>Create an account</h3>
@@ -203,8 +306,37 @@ hr{
 
 <div class="panel">
 <h2>Submit your message</h2>
-<p class="small">Share a confession, ask for advice, or tell your story.</p>
-<textarea id="submissionText" maxlength="10000" placeholder="Speak freely..."></textarea>
+
+<p class="small">
+Share a confession, ask for advice, or tell your story.
+</p>
+
+<div class="info-box">
+<h3>♡ A LITTLE REMINDER</h3>
+
+<p>
+Take a breath. You're allowed to let things out.
+</p>
+
+<p>
+- Talk about your feelings, even if they're complicated.<br>
+- Vent about something that's been bothering you.<br>
+- Ask for advice or a different perspective.<br>
+- Share happy moments, sad moments, worries, or anything in between.<br>
+- You don't need perfect words to express yourself.
+</p>
+
+<p>
+Nobody is here to judge you. You deserve patience,
+kindness, and understanding.
+</p>
+
+<p><strong>Your feelings are valid. This is your space. ❤️</strong></p>
+</div>
+
+<textarea id="submissionText" maxlength="10000"
+placeholder="Speak freely..."></textarea>
+
 <button id="submitBtn">SUBMIT TO THE COURT</button>
 </div>
 
@@ -219,14 +351,16 @@ hr{
 
 <div class="panel">
 <h2>Administrator's chamber</h2>
-<p class="small">All submissions are listed below. Select one to read and reply.</p>
+<p class="small">
+All submissions are listed below. Select one to read and reply.
+</p>
 <div id="allSubmissions"></div>
 </div>
 
 <div class="panel">
 <h2 id="selectedTitle">Select a submission</h2>
 <div id="conversation"></div>
-<textarea id="adminReply" placeholder="Write your reply..."></textarea>
+<textarea id="adminReply" placeholder="Write your reply..." disabled></textarea>
 <button id="replyBtn" disabled>SEND REPLY</button>
 </div>
 
@@ -275,7 +409,6 @@ function makeButton(text,callback){
   return button;
 }
 
-/* Creates the special Higuruma reply design */
 function makeCourtReply(text){
   const div = document.createElement("div");
   div.className = "message reply";
@@ -297,6 +430,23 @@ function makeCourtReply(text){
   return div;
 }
 
+function makeUserReply(text){
+  const div = document.createElement("div");
+  div.className = "message user-message";
+
+  const heading = document.createElement("div");
+  heading.className = "user-heading";
+  heading.textContent = "YOUR REPLY:";
+
+  const content = document.createElement("div");
+  content.style.whiteSpace = "pre-wrap";
+  content.style.overflowWrap = "anywhere";
+  content.textContent = text;
+
+  div.append(heading,content);
+  return div;
+}
+
 function resetInterface(){
   currentUser = null;
   currentProfile = null;
@@ -306,7 +456,9 @@ function resetInterface(){
   $("auth").classList.remove("hidden");
   $("userArea").classList.add("hidden");
   $("adminArea").classList.add("hidden");
+
   $("replyBtn").disabled = true;
+  $("adminReply").disabled = true;
 }
 
 async function register(){
@@ -475,7 +627,7 @@ async function submitMessage(){
     }
 
     $("submissionText").value = "";
-    status("Your message has been submitted.");
+    status("Your message has been submitted. Higuruma will respond when ready.");
     await loadMySubmissions();
 
   }finally{
@@ -508,7 +660,7 @@ async function loadMySubmissions(){
     entry.className = "item";
 
     entry.append(makeMessage(item.message));
-    entry.append(makeButton("VIEW REPLIES",()=>showUserConversation(item)));
+    entry.append(makeButton("OPEN CONVERSATION",()=>showUserConversation(item)));
 
     list.append(entry);
   }
@@ -519,11 +671,12 @@ async function showUserConversation(item){
   box.replaceChildren();
 
   box.append(makeButton("BACK TO MY MESSAGES",loadMySubmissions));
+  box.append(makeButton("REFRESH CONVERSATION",()=>showUserConversation(item)));
   box.append(makeMessage(item.message));
 
   const {data,error} = await db
     .from("replies")
-    .select("message,created_at")
+    .select("message,sender_id,created_at")
     .eq("submission_id",item.id)
     .order("created_at",{ascending:true});
 
@@ -532,13 +685,81 @@ async function showUserConversation(item){
     return;
   }
 
-  if(!data || !data.length){
-    box.append(makeMessage("No replies yet."));
-    return;
+  const replies = data || [];
+
+  for(const reply of replies){
+    if(reply.sender_id === currentUser.id){
+      box.append(makeUserReply(reply.message));
+    }else{
+      box.append(makeCourtReply(reply.message));
+    }
   }
 
-  for(const reply of data){
-    box.append(makeCourtReply(reply.message));
+  const lastReply = replies.length ? replies[replies.length-1] : null;
+
+  if(lastReply && lastReply.sender_id !== currentUser.id){
+    const notice = document.createElement("div");
+    notice.className = "turn-notice";
+    notice.textContent = "It is your turn. You can reply to Higuruma now.";
+
+    const textarea = document.createElement("textarea");
+    textarea.id = "userFollowUp";
+    textarea.maxLength = 10000;
+    textarea.placeholder = "Write your follow-up message...";
+
+    const sendButton = makeButton("SEND YOUR REPLY",()=>sendUserReply(item));
+    sendButton.id = "userFollowUpBtn";
+
+    box.append(notice,textarea,sendButton);
+  }else{
+    const notice = document.createElement("div");
+    notice.className = "turn-notice";
+
+    if(!lastReply){
+      notice.textContent = "Your message is awaiting Higuruma's first reply.";
+    }else{
+      notice.textContent = "Your reply has been sent. Please wait for Higuruma to respond before sending another message.";
+    }
+
+    box.append(notice);
+  }
+
+  status("");
+}
+
+async function sendUserReply(item){
+  if(!currentUser) return status("Please log in again.");
+
+  const textarea = $("userFollowUp");
+  const button = $("userFollowUpBtn");
+
+  if(!textarea || !button) return;
+
+  const message = textarea.value.trim();
+
+  if(!message) return status("Write a message first.");
+
+  button.disabled = true;
+
+  try{
+    const {error} = await db.from("replies").insert({
+      submission_id:item.id,
+      sender_id:currentUser.id,
+      message
+    });
+
+    if(error){
+      status("Could not send your reply:\n" + errorDetails(error));
+      button.disabled = false;
+      return;
+    }
+
+    status("Your reply has been sent. Now it is Higuruma's turn.");
+    await showUserConversation(item);
+
+  }catch(error){
+    status("Could not send your reply:\n" + (error.message || String(error)));
+    button.disabled = false;
   }
 }
 
@@ -600,8 +821,14 @@ async function openAdminConversation(item){
   selectedSubmission = item;
 
   $("selectedTitle").textContent = "Conversation";
-  $("replyBtn").disabled = false;
-  $("conversation").replaceChildren(makeMessage(item.message));
+  $("adminReply").value = "";
+  $("adminReply").disabled = true;
+  $("replyBtn").disabled = true;
+
+  $("conversation").replaceChildren(
+    makeButton("REFRESH CONVERSATION",()=>openAdminConversation(item)),
+    makeMessage(item.message)
+  );
 
   const {data,error} = await db
     .from("replies")
@@ -614,9 +841,35 @@ async function openAdminConversation(item){
     return;
   }
 
-  for(const reply of data || []){
-    $("conversation").append(makeCourtReply(reply.message));
+  const replies = data || [];
+
+  for(const reply of replies){
+    if(reply.sender_id === currentUser.id){
+      $("conversation").append(makeCourtReply(reply.message));
+    }else{
+      $("conversation").append(makeUserReply(reply.message));
+    }
   }
+
+  const lastReply = replies.length ? replies[replies.length-1] : null;
+  const adminTurn = !lastReply || lastReply.sender_id !== currentUser.id;
+
+  if(adminTurn){
+    $("adminReply").disabled = false;
+    $("replyBtn").disabled = false;
+
+    const notice = document.createElement("div");
+    notice.className = "turn-notice";
+    notice.textContent = "It is your turn to reply.";
+    $("conversation").append(notice);
+  }else{
+    const notice = document.createElement("div");
+    notice.className = "turn-notice";
+    notice.textContent = "The user has replied. It is now their turn to wait for your next response.";
+    $("conversation").append(notice);
+  }
+
+  status("");
 }
 
 async function sendReply(){
@@ -627,6 +880,7 @@ async function sendReply(){
   if(!message) return status("Write a reply first.");
 
   $("replyBtn").disabled = true;
+  $("adminReply").disabled = true;
 
   try{
     const {error} = await db.from("replies").insert({
@@ -637,15 +891,19 @@ async function sendReply(){
 
     if(error){
       status("Could not send reply:\n" + errorDetails(error));
+      $("adminReply").disabled = false;
+      $("replyBtn").disabled = false;
       return;
     }
 
     $("adminReply").value = "";
-    status("Reply sent.");
+    status("Court reply sent. The user can now respond.");
     await openAdminConversation(selectedSubmission);
 
-  }finally{
-    $("replyBtn").disabled = !selectedSubmission;
+  }catch(error){
+    status("Could not send reply:\n" + (error.message || String(error)));
+    $("adminReply").disabled = false;
+    $("replyBtn").disabled = false;
   }
 }
 
