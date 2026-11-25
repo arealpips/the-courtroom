@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>THE COURTROOM</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#111;color:#eee;font-family:Georgia,serif}
@@ -18,33 +19,39 @@ input,textarea{width:100%;padding:13px;margin:8px 0;background:#111;color:white;
 textarea{min-height:120px;resize:vertical}
 button{padding:12px 18px;margin:5px 4px 5px 0;background:#ddd;color:#111;border:0;cursor:pointer;font-weight:bold}
 button:hover{background:#aaa}
+button:disabled{opacity:.45;cursor:not-allowed}
 .small{color:#aaa;font-size:13px}
 .hidden{display:none!important}
-.item{padding:13px;border-bottom:1px solid #444;cursor:pointer}
-.item:hover{background:#292929}
+.item{padding:13px;border-bottom:1px solid #444}
 .message{padding:12px;margin:10px 0;background:#292929;border-radius:4px;white-space:pre-wrap;overflow-wrap:anywhere}
 .reply{margin-left:20px;border-left:2px solid #aaa}
-#status{color:#d7bd8b;white-space:pre-wrap}
+#status{color:#d7bd8b;white-space:pre-wrap;overflow-wrap:anywhere}
+hr{border:0;border-top:1px solid #444;margin:25px 0}
 </style>
 </head>
+
 <body>
 <header>
 <h1>THE COURTROOM</h1>
 <p>Confessions. Advice. Judgment without prejudice.</p>
 </header>
+
 <main>
 <p id="status"></p>
 
 <section id="auth" class="panel">
 <h2>Enter the courtroom</h2>
+
 <div id="register">
 <h3>Create an account</h3>
-<input id="newUsername" placeholder="Choose a username">
+<input id="newUsername" placeholder="Choose a username" maxlength="24">
 <input id="newEmail" type="email" placeholder="Email address">
 <input id="newPassword" type="password" placeholder="Password (at least 8 characters)">
 <button id="registerBtn">REGISTER</button>
 </div>
+
 <hr>
+
 <div id="login">
 <h3>Sign in</h3>
 <input id="email" type="email" placeholder="Email address">
@@ -54,6 +61,7 @@ button:hover{background:#aaa}
 </section>
 
 <section id="app" class="hidden">
+
 <div class="panel">
 <p>Signed in as <strong id="username"></strong></p>
 <button id="logoutBtn">LOG OUT</button>
@@ -66,6 +74,7 @@ button:hover{background:#aaa}
 <textarea id="submissionText" maxlength="10000" placeholder="Speak freely..."></textarea>
 <button id="submitBtn">SUBMIT TO THE COURT</button>
 </div>
+
 <div class="panel">
 <h2>Your conversations</h2>
 <div id="mySubmissions"></div>
@@ -78,6 +87,7 @@ button:hover{background:#aaa}
 <p class="small">All submissions are listed below. Select one to read and reply.</p>
 <div id="allSubmissions"></div>
 </div>
+
 <div class="panel">
 <h2 id="selectedTitle">Select a submission</h2>
 <div id="conversation"></div>
@@ -95,15 +105,27 @@ const SUPABASE_KEY = "sb_publishable_gTjHVfN1Ib3YDEszH4fcMw_xwnFyAWF";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const $ = id => document.getElementById(id);
+
 let currentUser = null;
 let currentProfile = null;
 let selectedSubmission = null;
+let loadingApp = null;
 
 function status(message) {
   $("status").textContent = message;
 }
 
-function makeMessage(text, className="message") {
+function errorDetails(error) {
+  if (!error) return "Unknown error.";
+  return [
+    error.message || "Unknown error",
+    error.code ? "Code: " + error.code : "",
+    error.details || "",
+    error.hint || ""
+  ].filter(Boolean).join("\n");
+}
+
+function makeMessage(text, className = "message") {
   const div = document.createElement("div");
   div.className = className;
   div.textContent = text;
@@ -117,6 +139,18 @@ function makeButton(text, callback) {
   return button;
 }
 
+function resetInterface() {
+  currentUser = null;
+  currentProfile = null;
+  selectedSubmission = null;
+
+  $("app").classList.add("hidden");
+  $("auth").classList.remove("hidden");
+  $("userArea").classList.add("hidden");
+  $("adminArea").classList.add("hidden");
+  $("replyBtn").disabled = true;
+}
+
 async function register() {
   const username = $("newUsername").value.trim();
   const email = $("newEmail").value.trim();
@@ -125,92 +159,199 @@ async function register() {
   if (!/^[a-zA-Z0-9_]{3,24}$/.test(username)) {
     return status("Username must be 3–24 characters: letters, numbers or underscores.");
   }
+
   if (!email || password.length < 8) {
     return status("Enter a valid email and a password of at least 8 characters.");
   }
+
   if (username.toLowerCase() === "arealpips") {
     return status("That username is reserved.");
   }
 
+  $("registerBtn").disabled = true;
   status("Creating your account...");
-  const {error} = await db.auth.signUp({
-    email, password,
-    options: {data: {username}}
-  });
 
-  if (error) return status(error.message);
-  status("Account created! Check your email if confirmation is required, then log in.");
+  try {
+    const {data, error} = await db.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {username}
+      }
+    });
+
+    if (error) {
+      status(error.message);
+      return;
+    }
+
+    if (data.session) {
+      await loadApp(data.user);
+    } else {
+      status("Account created! Check your email if confirmation is required. Once confirmed, return here and log in.");
+    }
+  } catch (error) {
+    status(error.message || "Registration failed.");
+  } finally {
+    $("registerBtn").disabled = false;
+  }
 }
 
 async function login() {
+  const email = $("email").value.trim();
+  const password = $("password").value;
+
+  if (!email || !password) {
+    return status("Enter your email and password.");
+  }
+
+  $("loginBtn").disabled = true;
   status("Signing in...");
-  const {error} = await db.auth.signInWithPassword({
-    email: $("email").value.trim(),
-    password: $("password").value
-  });
-  if (error) return status(error.message);
-  await loadApp();
+
+  try {
+    const {data, error} = await db.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      status(error.message);
+      return;
+    }
+
+    await loadApp(data.user);
+  } catch (error) {
+    status(error.message || "Login failed.");
+  } finally {
+    $("loginBtn").disabled = false;
+  }
 }
 
-async function loadApp() {
-  const {data:{user}} = await db.auth.getUser();
-  if (!user) return;
+async function loadApp(userOverride = null) {
+  if (loadingApp) return loadingApp;
 
-  currentUser = user;
-  const {data:profile,error} = await db.from("profiles")
-    .select("username,is_admin")
-    .eq("id",user.id)
-    .single();
+  loadingApp = (async () => {
+    try {
+      let user = userOverride;
 
-  if (error || !profile) {
-    status("Your profile could not be loaded. Please contact the administrator.");
-    return;
+      if (!user) {
+        const {data, error} = await db.auth.getUser();
+
+        if (error) {
+          status("Could not verify your login: " + error.message);
+          return;
+        }
+
+        user = data.user;
+      }
+
+      if (!user) {
+        resetInterface();
+        return;
+      }
+
+      currentUser = user;
+      status("Loading your profile...");
+
+      const {data: profile, error} = await db
+        .from("profiles")
+        .select("username,is_admin")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        status(
+          "PROFILE ERROR\n" +
+          errorDetails(error) +
+          "\n\nYour account is signed in, but Supabase could not read your profile."
+        );
+        return;
+      }
+
+      if (!profile) {
+        status(
+          "PROFILE NOT FOUND\n" +
+          "Your login exists, but no matching profile was returned for this account.\n" +
+          "Please contact the administrator."
+        );
+        return;
+      }
+
+      currentProfile = profile;
+
+      $("auth").classList.add("hidden");
+      $("app").classList.remove("hidden");
+      $("username").textContent = profile.username || "User";
+
+      if (profile.is_admin === true) {
+        $("adminArea").classList.remove("hidden");
+        $("userArea").classList.add("hidden");
+        await loadAllSubmissions();
+      } else {
+        $("userArea").classList.remove("hidden");
+        $("adminArea").classList.add("hidden");
+        await loadMySubmissions();
+      }
+
+      status("");
+    } catch (error) {
+      status("APP ERROR\n" + (error.message || String(error)));
+    }
+  })();
+
+  try {
+    await loadingApp;
+  } finally {
+    loadingApp = null;
   }
-
-  currentProfile = profile;
-  $("auth").classList.add("hidden");
-  $("app").classList.remove("hidden");
-  $("username").textContent = profile.username;
-
-  if (profile.is_admin) {
-    $("adminArea").classList.remove("hidden");
-    $("userArea").classList.add("hidden");
-    await loadAllSubmissions();
-  } else {
-    $("userArea").classList.remove("hidden");
-    $("adminArea").classList.add("hidden");
-    await loadMySubmissions();
-  }
-  status("");
 }
 
 async function submitMessage() {
+  if (!currentUser) return status("Please log in again.");
+
   const message = $("submissionText").value.trim();
-  if (!message) return status("Please write a message first.");
 
-  const {error} = await db.from("submissions").insert({
-    user_id: currentUser.id,
-    message
-  });
+  if (!message) {
+    return status("Please write a message first.");
+  }
 
-  if (error) return status(error.message);
-  $("submissionText").value = "";
-  status("Your message has been submitted.");
-  await loadMySubmissions();
+  $("submitBtn").disabled = true;
+
+  try {
+    const {error} = await db.from("submissions").insert({
+      user_id: currentUser.id,
+      message
+    });
+
+    if (error) {
+      status(errorDetails(error));
+      return;
+    }
+
+    $("submissionText").value = "";
+    status("Your message has been submitted.");
+    await loadMySubmissions();
+  } finally {
+    $("submitBtn").disabled = false;
+  }
 }
 
 async function loadMySubmissions() {
-  const {data,error} = await db.from("submissions")
+  const {data, error} = await db
+    .from("submissions")
     .select("id,message,created_at")
-    .eq("user_id",currentUser.id)
-    .order("created_at",{ascending:false});
+    .eq("user_id", currentUser.id)
+    .order("created_at", {ascending: false});
 
-  if (error) return status(error.message);
+  if (error) {
+    status("Could not load your submissions:\n" + errorDetails(error));
+    return;
+  }
 
   const list = $("mySubmissions");
   list.replaceChildren();
 
-  if (!data.length) {
+  if (!data || !data.length) {
     list.textContent = "You haven't submitted anything yet.";
     return;
   }
@@ -218,8 +359,10 @@ async function loadMySubmissions() {
   for (const item of data) {
     const entry = document.createElement("div");
     entry.className = "item";
+
     entry.append(makeMessage(item.message));
-    entry.append(makeButton("VIEW REPLIES",()=>showUserConversation(item)));
+    entry.append(makeButton("VIEW REPLIES", () => showUserConversation(item)));
+
     list.append(entry);
   }
 }
@@ -227,93 +370,154 @@ async function loadMySubmissions() {
 async function showUserConversation(item) {
   const box = $("mySubmissions");
   box.replaceChildren();
-  const back = makeButton("BACK TO MY MESSAGES",loadMySubmissions);
-  box.append(back);
+
+  box.append(makeButton("BACK TO MY MESSAGES", loadMySubmissions));
   box.append(makeMessage(item.message));
 
-  const {data,error} = await db.from("replies")
+  const {data, error} = await db
+    .from("replies")
     .select("message,created_at")
-    .eq("submission_id",item.id)
-    .order("created_at",{ascending:true});
+    .eq("submission_id", item.id)
+    .order("created_at", {ascending: true});
 
-  if (error) return status(error.message);
-  if (!data.length) box.append(makeMessage("No replies yet."));
+  if (error) {
+    status("Could not load replies:\n" + errorDetails(error));
+    return;
+  }
+
+  if (!data || !data.length) {
+    box.append(makeMessage("No replies yet."));
+    return;
+  }
+
   for (const reply of data) {
-    box.append(makeMessage("COURT REPLY:\n"+reply.message,"message reply"));
+    box.append(makeMessage("COURT REPLY:\n" + reply.message, "message reply"));
   }
 }
 
 async function loadAllSubmissions() {
-  const {data,error} = await db.from("submissions")
+  const {data, error} = await db
+    .from("submissions")
     .select("id,user_id,message,created_at")
-    .order("created_at",{ascending:false});
+    .order("created_at", {ascending: false});
 
-  if (error) return status(error.message);
+  if (error) {
+    status("Could not load submissions:\n" + errorDetails(error));
+    return;
+  }
 
   const list = $("allSubmissions");
   list.replaceChildren();
 
-  if (!data.length) {
+  if (!data || !data.length) {
     list.textContent = "No submissions yet.";
     return;
+  }
+
+  // Look up usernames for the submitters.
+  const userIds = [...new Set(data.map(item => item.user_id))];
+  const {data: profiles, error: profileError} = await db
+    .from("profiles")
+    .select("id,username")
+    .in("id", userIds);
+
+  const usernames = {};
+
+  if (!profileError && profiles) {
+    for (const profile of profiles) {
+      usernames[profile.id] = profile.username;
+    }
   }
 
   for (const item of data) {
     const entry = document.createElement("div");
     entry.className = "item";
+
     const title = document.createElement("strong");
-    title.textContent = "Submission from " + item.user_id;
+    title.textContent = "Submission from " +
+      (usernames[item.user_id] || "Unknown user");
+
     entry.append(title);
     entry.append(makeMessage(item.message));
-    entry.append(makeButton("OPEN CONVERSATION",()=>openAdminConversation(item)));
+    entry.append(makeButton("OPEN CONVERSATION", () => openAdminConversation(item)));
+
     list.append(entry);
+  }
+
+  if (profileError) {
+    status("Submissions loaded, but usernames could not be loaded:\n" + errorDetails(profileError));
   }
 }
 
 async function openAdminConversation(item) {
   selectedSubmission = item;
+
   $("selectedTitle").textContent = "Conversation";
   $("replyBtn").disabled = false;
   $("conversation").replaceChildren(makeMessage(item.message));
 
-  const {data,error} = await db.from("replies")
+  const {data, error} = await db
+    .from("replies")
     .select("message,sender_id,created_at")
-    .eq("submission_id",item.id)
-    .order("created_at",{ascending:true});
+    .eq("submission_id", item.id)
+    .order("created_at", {ascending: true});
 
-  if (error) return status(error.message);
+  if (error) {
+    status("Could not load conversation:\n" + errorDetails(error));
+    return;
+  }
 
-  for (const reply of data) {
+  for (const reply of data || []) {
+    const label = reply.sender_id === currentUser.id
+      ? "ADMIN: "
+      : "COURT REPLY: ";
+
     $("conversation").append(
-      makeMessage((reply.sender_id === currentUser.id ? "ADMIN: " : "REPLY: ") + reply.message,"message reply")
+      makeMessage(label + reply.message, "message reply")
     );
   }
 }
 
 async function sendReply() {
-  if (!selectedSubmission) return;
+  if (!selectedSubmission || !currentUser) return;
+
   const message = $("adminReply").value.trim();
-  if (!message) return status("Write a reply first.");
 
-  const {error} = await db.from("replies").insert({
-    submission_id:selectedSubmission.id,
-    sender_id:currentUser.id,
-    message
-  });
+  if (!message) {
+    return status("Write a reply first.");
+  }
 
-  if (error) return status(error.message);
-  $("adminReply").value = "";
-  status("Reply sent.");
-  await openAdminConversation(selectedSubmission);
+  $("replyBtn").disabled = true;
+
+  try {
+    const {error} = await db.from("replies").insert({
+      submission_id: selectedSubmission.id,
+      sender_id: currentUser.id,
+      message
+    });
+
+    if (error) {
+      status("Could not send reply:\n" + errorDetails(error));
+      return;
+    }
+
+    $("adminReply").value = "";
+    status("Reply sent.");
+    await openAdminConversation(selectedSubmission);
+  } finally {
+    $("replyBtn").disabled = !selectedSubmission;
+  }
 }
 
 async function logout() {
-  await db.auth.signOut();
-  currentUser = null;
-  currentProfile = null;
-  selectedSubmission = null;
-  $("app").classList.add("hidden");
-  $("auth").classList.remove("hidden");
+  const {error} = await db.auth.signOut();
+
+  if (error) {
+    status("Could not log out: " + error.message);
+    return;
+  }
+
+  resetInterface();
   status("You have logged out.");
 }
 
@@ -323,10 +527,16 @@ $("submitBtn").onclick = submitMessage;
 $("replyBtn").onclick = sendReply;
 $("logoutBtn").onclick = logout;
 
-db.auth.onAuthStateChange((event,session)=>{
-  if (event === "SIGNED_IN" && session) {
-    setTimeout(loadApp,0);
-  }
+db.auth.onAuthStateChange((event, session) => {
+  setTimeout(() => {
+    if (event === "SIGNED_IN" && session) {
+      loadApp(session.user);
+    }
+
+    if (event === "SIGNED_OUT") {
+      resetInterface();
+    }
+  }, 0);
 });
 
 loadApp();
